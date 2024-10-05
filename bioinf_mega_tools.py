@@ -1,4 +1,5 @@
-from scripts.filter_params import filter_gc, filter_length, filter_quality
+from scripts.filter_params import is_filter_gc
+from scripts.filter_params import is_filter_length, is_filter_quality
 import scripts.dna_rna_tools
 
 operations = {
@@ -73,9 +74,9 @@ def filter_fastq(
 
     for key, value in seqs.items():
         if (
-            filter_gc(value[0], gc_bounds)
-            and filter_length(value[0], length_bounds)
-            and filter_quality(value[1], quality_threshold)
+            is_filter_gc(value[0], gc_bounds)
+            and is_filter_length(value[0], length_bounds)
+            and is_filter_quality(value[1], quality_threshold)
         ):
             result[key] = value
     return result
