@@ -47,12 +47,12 @@ def filter_fastq(
     gc_bounds: tuple | float | int = (0, 100),
     length_bounds: tuple | int = (0, 2**32),
     quality_threshold: float | int = 0,
-) -> function:
+):
     """
     The function filters DNA and RNA reads from fastq file by parameters:
     GC content in sequence, sequence length, average quality score encoding.
     All boundaries are within the parameters ranges.
-    
+
     Args:
 
     input_fastq - name of fastq file to read
