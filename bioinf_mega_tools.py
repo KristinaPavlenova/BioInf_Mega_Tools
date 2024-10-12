@@ -11,7 +11,7 @@ operations = {
 }
 
 
-def run_dna_rna_tools(*args: str):
+def run_dna_rna_tools(*args: str) -> str | dict:
     """
     The function returns DNA or RNA sequence
     after one of the following operations:
@@ -47,7 +47,7 @@ def filter_fastq(
     gc_bounds: tuple | float | int = (0, 100),
     length_bounds: tuple | int = (0, 2**32),
     quality_threshold: float | int = 0,
-):
+) -> None:
     """
     The function filters DNA and RNA reads from fastq file by parameters:
     GC content in sequence, sequence length, average quality score encoding.
@@ -82,4 +82,4 @@ def filter_fastq(
             and is_filter_quality(value[1], quality_threshold)
         ):
             filtered_seqs[key] = value
-    return scripts.rw_fastq.write_fastq(output_fastq, filtered_seqs)
+    scripts.rw_fastq.write_fastq(output_fastq, filtered_seqs)

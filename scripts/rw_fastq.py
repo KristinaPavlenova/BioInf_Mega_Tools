@@ -13,7 +13,7 @@ def read_fastq(input_fastq: str) -> dict:
     return seqs
 
 
-def write_fastq(output_fastq: str, filtered_seqs: dict):
+def write_fastq(output_fastq: str, filtered_seqs: dict) -> None:
     if not os.path.exists("./filtered/"):
         os.mkdir("./filtered/")
     with open(os.path.join("./filtered/", output_fastq), "w") as fastq:
@@ -22,4 +22,3 @@ def write_fastq(output_fastq: str, filtered_seqs: dict):
             fastq.write(value[0])
             fastq.write("+" + key[1:])
             fastq.write(value[1] + "\n")
-    pass
