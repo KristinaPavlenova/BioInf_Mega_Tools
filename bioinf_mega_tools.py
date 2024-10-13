@@ -27,6 +27,7 @@ def run_dna_rna_tools(*args: str) -> str | dict:
     """
     seqs = args[:-1]
     operation = args[-1]
+    results = []
 
     for i in range(len(seqs)):
         is_dna = scripts.dna_rna_tools.is_dna
@@ -34,11 +35,13 @@ def run_dna_rna_tools(*args: str) -> str | dict:
         if not is_dna(seqs[i]) and not is_rna(seqs[i]):
             seqs[i] = "Warning, input is not DNA/RNA"
 
-    result = operations[operation](seqs)
+    for seq in seqs:
+        result = operations[operation](seq)
+        results.append(result)
 
-    if len(result) == 1:
-        return result[0]
-    return result
+    if len(results) == 1:
+        return results[0]
+    return results
 
 
 def filter_fastq(
@@ -75,11 +78,11 @@ def filter_fastq(
     filtered_seqs = dict()
     seqs = scripts.rw_fastq.read_fastq(input_fastq)
 
-    for key, value in seqs.items():
+    for seq_id, (seq, qual) in seqs.items():
         if (
-            is_filter_gc(value[0], gc_bounds)
-            and is_filter_length(value[0], length_bounds)
-            and is_filter_quality(value[1], quality_threshold)
+            is_filter_gc(seq, gc_bounds)
+            and is_filter_length(seq, length_bounds)
+            and is_filter_quality(qual, quality_threshold)
         ):
-            filtered_seqs[key] = value
+            filtered_seqs[seq_id] = (seq, qual)
     scripts.rw_fastq.write_fastq(output_fastq, filtered_seqs)
