@@ -9,7 +9,7 @@ def read_fastq(input_fastq: str) -> dict:
                 seq = fastq.readline()
                 fastq.readline()
                 scores = fastq.readline().strip()
-                seqs[line] = (seq, scores)
+                seqs[line] = (seq, qual)
     return seqs
 
 
@@ -17,8 +17,8 @@ def write_fastq(output_fastq: str, filtered_seqs: dict) -> None:
     if not os.path.exists("./filtered/"):
         os.mkdir("./filtered/")
     with open(os.path.join("./filtered/", output_fastq), "w") as fastq:
-        for key, value in filtered_seqs.items():
-            fastq.write(key)
-            fastq.write(value[0])
-            fastq.write("+" + key[1:])
-            fastq.write(value[1] + "\n")
+        for seq_id, (seq, qual) in filtered_seqs.items():
+            fastq.write(seq_id)
+            fastq.write(seq)
+            fastq.write("+" + seq_id[1:])
+            fastq.write(qual + "\n")
