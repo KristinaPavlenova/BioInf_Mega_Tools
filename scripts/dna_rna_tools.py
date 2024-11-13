@@ -1,5 +1,5 @@
-transcribe_nucl = {"T": "U", "t": "u"}
-complement_nucl = {
+TRANSCRIBE_NUCL = {"T": "U", "t": "u"}
+COMPLEMENT_NUCL = {
     "A": "T",
     "T": "A",
     "G": "C",
@@ -22,37 +22,24 @@ def is_rna(seq: str) -> bool:
     return "U" in seq and set(seq).issubset({"A", "G", "C", "U"})
 
 
-def transcribe(seqs: tuple) -> list:
-    result = []
-    for seq in seqs:
-        if "T" in seq.upper() and is_dna(seq):
-            for key in transcribe_nucl:
-                seq = seq.replace(key, transcribe_nucl[key])
-            result.append(seq)
-        else:
-            result.append(seq)
+def transcribe(seq: str) -> str:
+    if "T" in seq.upper() and is_dna(seq):
+        for nucl in TRANSCRIBE_NUCL:
+            seq = seq.replace(nucl, TRANSCRIBE_NUCL[nucl])
+    return seq
+
+
+def reverse(seq: str) -> str:
+    if is_dna(seq) or is_rna(seq):
+        result = seq[::-1]
     return result
 
 
-def reverse(seqs: tuple) -> list:
-    result = []
-    for seq in seqs:
-        if is_dna(seq) or is_rna(seq):
-            result.append(seq[::-1])
-        else:
-            result.append(seq)
+def complement(seq: str) -> str:
+    if is_dna(seq) or is_rna(seq):
+        result = "".join([COMPLEMENT_NUCL[i] for i in seq])
     return result
 
 
-def complement(seqs: tuple) -> list:
-    result = []
-    for seq in seqs:
-        if is_dna(seq) or is_rna(seq):
-            result.append("".join([complement_nucl[i] for i in seq]))
-        else:
-            result.append(seq)
-    return result
-
-
-def reverse_complement(seqs: tuple) -> list:
-    return reverse(complement(seqs))
+def reverse_complement(seq: str) -> str:
+    return reverse(complement(seq))

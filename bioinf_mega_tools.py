@@ -1,6 +1,7 @@
 from scripts.filter_params import is_filter_gc
 from scripts.filter_params import is_filter_length, is_filter_quality
 import scripts.dna_rna_tools
+import scripts.rw_fastq
 
 operations = {
     "transcribe": scripts.dna_rna_tools.transcribe,
@@ -10,7 +11,7 @@ operations = {
 }
 
 
-def run_dna_rna_tools(*args: str):
+def run_dna_rna_tools(*args: str) -> str | dict:
     """
     The function returns DNA or RNA sequence
     after one of the following operations:
@@ -26,6 +27,7 @@ def run_dna_rna_tools(*args: str):
     """
     seqs = args[:-1]
     operation = args[-1]
+    results = []
 
     for i in range(len(seqs)):
         is_dna = scripts.dna_rna_tools.is_dna
@@ -33,28 +35,31 @@ def run_dna_rna_tools(*args: str):
         if not is_dna(seqs[i]) and not is_rna(seqs[i]):
             seqs[i] = "Warning, input is not DNA/RNA"
 
-    result = operations[operation](seqs)
+    for seq in seqs:
+        result = operations[operation](seq)
+        results.append(result)
 
-    if len(result) == 1:
-        return result[0]
-    return result
+    if len(results) == 1:
+        return results[0]
+    return results
 
 
 def filter_fastq(
-    seqs: dict,
+    input_fastq: str,
+    output_fastq: str,
     gc_bounds: tuple | float | int = (0, 100),
     length_bounds: tuple | int = (0, 2**32),
     quality_threshold: float | int = 0,
-) -> dict:
+) -> None:
     """
-    The function filters DNA and RNA reads by parameters:
+    The function filters DNA and RNA reads from fastq file by parameters:
     GC content in sequence, sequence length, average quality score encoding.
     All boundaries are within the parameters ranges.
 
     Args:
 
-    seqs: {'name': ('dna_rna_sequence', 'quality_score_encoding')}
-    is a collection with reads
+    input_fastq - name of fastq file to read
+    output_fastq - name of fastq file to write (path: ./filtered/output_fastq)
 
     gc_bounds: percentage range for GC content in 'dna_rna_sequence';
     in the case gc_bounds = (a: float | int, b: float | int)
@@ -70,13 +75,14 @@ def filter_fastq(
     for filter in the scale phred33,
     default = 0
     """
-    result = dict()
+    filtered_seqs = dict()
+    seqs = scripts.rw_fastq.read_fastq(input_fastq)
 
-    for key, value in seqs.items():
+    for seq_id, (seq, qual) in seqs.items():
         if (
-            is_filter_gc(value[0], gc_bounds)
-            and is_filter_length(value[0], length_bounds)
-            and is_filter_quality(value[1], quality_threshold)
+            is_filter_gc(seq, gc_bounds)
+            and is_filter_length(seq, length_bounds)
+            and is_filter_quality(qual, quality_threshold)
         ):
-            result[key] = value
-    return result
+            filtered_seqs[seq_id] = (seq, qual)
+    scripts.rw_fastq.write_fastq(output_fastq, filtered_seqs)
