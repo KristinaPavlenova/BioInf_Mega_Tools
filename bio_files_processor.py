@@ -33,22 +33,22 @@ def parse_blast_output(input_file: str, output_file: str) -> None:
     """
     with open(input_file, "r") as blast_results, open(
         output_file, "w"
-    ) as best_ident_discriptions:
+    ) as best_ident_descriptions:
         best_ident_list = []
         for line in blast_results:
             if "Sequences producing significant alignments:" in line:
                 next_line = blast_results.readline()
-                len_discription_col = len(next_line.split("Scientific")[0])
+                len_description_col = len(next_line.split("Scientific")[0])
                 blast_results.readline()
                 line = blast_results.readline()
-                best_ident_list.append(line[:len_discription_col].strip())
+                best_ident_list.append(line[:len_description_col].strip())
         best_ident_list.sort()
-        for discription in best_ident_list:
-            print(discription, file=best_ident_discriptions)
+        for description in best_ident_list:
+            print(description, file=best_ident_descriptions)
 
 
 def select_genes_from_gbk_to_fasta(
-    input_gbk: str, output_fasta: str, *args: str, n_before: int = 1, n_after: int = 1
+    input_gbk: str, output_fasta: str, *genes: str, n_before: int = 1, n_after: int = 1
 ) -> None:
     """
     The function selects neighboring genes of gene/genes of interest from gbk file
@@ -57,12 +57,11 @@ def select_genes_from_gbk_to_fasta(
     Args:
     input_gbk - path of the input gbk file
     output_fasta - path of the output fasta file
-    *args - gene or genes of interest
+    *genes - gene or genes of interest
     n_before - number of genes before gene of interest to select (default = 1)
     n_after - number of genes after gene of interest to select (default = 1)
     """
     with open(input_gbk, "r") as input_gbk, open(output_fasta, "w") as output_fasta:
-        genes = args
         all_genes = []
         for line in input_gbk:
             if '/gene="' in line:
