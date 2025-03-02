@@ -1,47 +1,67 @@
 from scripts.filter_params import is_filter_gc
 from scripts.filter_params import is_filter_length, is_filter_quality
-import scripts.dna_rna_tools
 import scripts.rw_fastq
 
-operations = {
-    "transcribe": scripts.dna_rna_tools.transcribe,
-    "reverse": scripts.dna_rna_tools.reverse,
-    "complement": scripts.dna_rna_tools.complement,
-    "reverse_complement": scripts.dna_rna_tools.reverse_complement,
-}
+from abc import ABC
+
+class BiologicalSequence(ABC):
+    def __init__(self, sequence: str):
+        self.sequence = sequence.upper()
+        
+    def __len__(self):
+        return len(self.sequence)
+    
+    def __getitem__(self, index):
+         return self.sequence[index]
+
+    def __str__(self):
+        return self.sequence
+    
+    def __repr__(self):
+        return f"{self.__class__.__name__}: {self.sequence}"
+    
+    @staticmethod
+    def check_alphabet(sequence, alphabet):
+        return set(sequence).issubset(alphabet)
+    
+
+class NucleicAcidSequence(BiologicalSequence):
+    complement_nucl = {"A": "T", "T": "A", "G": "C", "C": "G", "U": "A"}
+
+    def complement(self):
+        return self.__class__("".join([self.complement_nucl[i] for i in self.sequence]))
+    
+    def reverse(self):
+        return self.__class__(self.sequence[::-1])
+    
+    def reverse_complement(self):
+        return self.__class__(self.complement().reverse().sequence)
+    
+    
+class DNASequence(NucleicAcidSequence):
+    alphabet = {'A', 'T', 'G', 'C'}
+
+    def transcribe(self):
+        return RNASequence(self.sequence.replace('T', 'U'))
+    
+
+class RNASequence(NucleicAcidSequence):
+    alphabet = {'A', 'G', 'C', 'U'}
+    pass
 
 
-def run_dna_rna_tools(*args: str) -> str | dict:
-    """
-    The function returns DNA or RNA sequence
-    after one of the following operations:
-    - transcribe (works only for DNA)
-    - reverse
-    - complement
-    - reverse_complement (reverse and complement together)
+class AminoAcidSequence(BiologicalSequence):
+    alphabet = {'A', 'R', 'N', 'D', 'C', 'E', 'Q', 'G', 'H', 'I', 'L', 'K', 'M', 'F', 'P', 'S', 'T', 'W', 'Y', 'V'}
+    amino_acid_weights = {
+        'A': 89.09, 'R': 174.20, 'N': 132.12, 'D': 133.10, 'C': 121.15,
+        'E': 147.13, 'Q': 146.15, 'G': 75.07, 'H': 155.16, 'I': 131.18,
+        'L': 131.18, 'K': 146.19, 'M': 149.21, 'F': 165.19, 'P': 115.13,
+        'S': 105.09, 'T': 119.12, 'W': 204.23, 'Y': 181.19, 'V': 117.15
+    }
+    
+    def molecular_weight(self):
+        return sum(self.amino_acid_weights.get(amino_acid, 0) for amino_acid in self.sequence)
 
-    Args:
-    last one - operation name
-    others - DNA/RNA sequence or sequences to operate
-    (if the value is not DNA/RNA returns a warning, not a sequence)
-    """
-    seqs = args[:-1]
-    operation = args[-1]
-    results = []
-
-    for i in range(len(seqs)):
-        is_dna = scripts.dna_rna_tools.is_dna
-        is_rna = scripts.dna_rna_tools.is_rna
-        if not is_dna(seqs[i]) and not is_rna(seqs[i]):
-            seqs[i] = "Warning, input is not DNA/RNA"
-
-    for seq in seqs:
-        result = operations[operation](seq)
-        results.append(result)
-
-    if len(results) == 1:
-        return results[0]
-    return results
 
 
 def filter_fastq(
