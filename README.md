@@ -4,17 +4,22 @@ The repo consists of tools for processing of bioinformatic objects.
 
 It includes 2 modules:
 
-1. The module **bioinf_mega_tools.py** for working with DNA and RNA sequences with 2 functions: *run_dna_rna_tools* and *filter_fastq*
+1. The module **bioinf_mega_tools.py** for working with biological sequences:
+classes *DNASequence*, *RNASequence*, *AminoAcidSequence* and function *filter_fastq*
 2. The module **bio_files_processor.py** for working with bioinformatic files: .fasta, .gbk, .txt (with BLAST results). Functions *convert_multiline_fasta_to_oneline*, *parse_blast_output* and *select_genes_from_gbk_to_fasta* are included in the module
 
 ## Module bioinf_mega_tools.py
-### Function - *run_dna_rna_tools*
+### Classes *DNASequence*, *RNASequence*, *AminoAcidSequence*
 
-The function returns DNA/RNA sequence or sequences after one of the following operations made for input DNA/RNA sequence or sequences:
- - transcription (works only for DNA)
+*DNASequence*, *RNASequence* implement the interface of parent class *NucleicAcidSequence* and abstract class *BiologicalSequence*. *DNASequence*, *RNASequence* have methods, which return instances of *DNASequence* and *RNASequence* classes after one of the following operations:
+ - transcription (works only for *DNASequence*)
  - reversion
  - complementation
  - reversion and complementation together
+
+ *AminoAcidSequence* implement the interface of abstract class *BiologicalSequence* and has method *molecular_weight*, which returns molecular weight of amino acid sequence.
+
+ *BiologicalSequence* class has attribute *sequence* and method *check_alphabet* to check sequence alphabet for correctness.
 
 ### Function - *filter_fastq*
 
@@ -39,19 +44,20 @@ The function selects neighboring genes of gene/genes of interest from gbk file a
 ## Running instructions
 
 1. Clone repository to your work directory.
-2. Import the module/modules.
-3. Check out the information about functions.
-4. Call the required function with the required arguments.
+2. Install Biopython (https://biopython.org/wiki/Download) for *filter_fastq* use.
+3. Import the module/modules or classes.
+4. Check out the information about functions/classes.
 
 ## Example of use 
 
 ```python
-import bioinf_mega_tools
-bioinf_mega_tools.run_dna_rna_tools('ATG', 'transcribe') # Returns 'AUG'
-bioinf_mega_tools.run_dna_rna_tools('ATG', 'reverse') # Returns 'GTA'
-bioinf_mega_tools.run_dna_rna_tools('AtG', 'complement') # Returns 'TaC'
-bioinf_mega_tools.run_dna_rna_tools('ATg', 'reverse_complement') # Returns 'cAT'
-bioinf_mega_tools.run_dna_rna_tools('ATG', 'aT', 'reverse') # Returns ['GTA', 'Ta']
+from bioinf_mega_tools import BiologicalSequence, DNASequence
+my_dna = DNASequence('ATG')
+my_dna.transcribe() # Returns 'AUG'
+my_dna.reverse() # Returns 'GTA'
+my_dna.complement() # Returns 'TAC'
+my_dna.reverse_complement() # Returns 'CAT'
+BiologicalSequence.check_alphabet(my_dna.sequence, my_dna.alphabet) # Returns True
 ```
 
 ## System requirements
