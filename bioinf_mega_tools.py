@@ -1,6 +1,6 @@
 from abc import ABC
 from Bio import SeqIO
-from Bio.SeqUtils import GC
+from Bio.SeqUtils import gc_fraction
 import os, os.path
 
 
@@ -20,7 +20,7 @@ class BiologicalSequence(ABC):
     def __repr__(self):
         return f"{self.__class__.__name__}: {self.sequence}"
 
-    def check_alphabet(slf):
+    def check_alphabet(self):
         return set(self.sequence).issubset(self.alphabet)
 
 
@@ -111,7 +111,7 @@ def filter_fastq(
     for filter in the scale phred33,
     default = 0
     """
-os.makedirs("./filtered/", exist_ok=True)
+    os.makedirs("./filtered/", exist_ok=True)
     if not isinstance(gc_bounds, tuple):
         gc_bounds = (0, gc_bounds)
     if not isinstance(length_bounds, tuple):
