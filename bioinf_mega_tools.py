@@ -1,7 +1,9 @@
 from abc import ABC
 from Bio import SeqIO
-from Bio.SeqUtils import GC
+from Bio.SeqUtils import gc_fraction
 import os, os.path
+import click
+import logging
 
 
 class BiologicalSequence(ABC):
@@ -20,7 +22,7 @@ class BiologicalSequence(ABC):
     def __repr__(self):
         return f"{self.__class__.__name__}: {self.sequence}"
 
-    def check_alphabet(slf):
+    def check_alphabet(self):
         return set(self.sequence).issubset(self.alphabet)
 
 
@@ -80,6 +82,13 @@ class AminoAcidSequence(BiologicalSequence):
         )
 
 
+logging.basicConfig(
+    filename='filter_fastq.log',
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+
+
 def filter_fastq(
     input_fastq: str,
     output_fastq: str,
@@ -111,19 +120,57 @@ def filter_fastq(
     for filter in the scale phred33,
     default = 0
     """
-os.makedirs("./filtered/", exist_ok=True)
+    os.makedirs("./filtered/", exist_ok=True)
+
+    logging.info(f"Starting filtering {input_fastq}.")
+
     if not isinstance(gc_bounds, tuple):
         gc_bounds = (0, gc_bounds)
     if not isinstance(length_bounds, tuple):
         length_bounds = (0, length_bounds)
+    try:
+        with open(input_fastq) as input_handle:
+            with open(os.path.join("./filtered/", output_fastq), "w") as output_handle:
+                for record in SeqIO.parse(input_handle, "fastq"):
+                    qualities = record.letter_annotations["phred_quality"]
+                    if (
+                        gc_bounds[0] <= gc_fraction(record.seq) * 100 <= gc_bounds[1]
+                        and length_bounds[0] <= len(record.seq) <= length_bounds[1]
+                        and sum(qualities) / len(qualities) >= quality_threshold
+                    ):
+                        SeqIO.write(record, output_handle, "fastq")
+        logging.info(f"Filtering complete. Output saved to {os.path.join('./filtered/', output_fastq)}.")
+    except Exception as e:
+        logging.error(f"Error during filtering: {e}")
+        raise
 
-    with open(input_fastq) as input_handle:
-        with open(os.path.join("./filtered/", output_fastq), "w") as output_handle:
-            for record in SeqIO.parse(input_handle, "fastq"):
-                qualities = record.letter_annotations["phred_quality"]
-                if (
-                    gc_bounds[0] <= gc_fraction(record.seq) * 100 <= gc_bounds[1]
-                    and length_bounds[0] <= len(record.seq) <= length_bounds[1]
-                    and sum(qualities) / len(qualities) >= quality_threshold
-                ):
-                    SeqIO.write(record, output_handle, "fastq")
+
+
+def parse_range(_, __, value):
+    if value is None:
+        return None
+    if "," in value:
+        a, b = map(float, value.split(","))
+        return (a, b)
+    return float(value)
+
+
+@click.command()
+@click.argument('input_fastq', type=click.Path(exists=True))
+@click.argument('output_fastq')
+@click.option('--gc_bounds', callback=parse_range, default="0,100")
+@click.option('--length_bounds', callback=parse_range, default="0,4294967296")
+@click.option('--quality_threshold', type=float, default=0)
+def cli(input_fastq, output_fastq, gc_bounds, length_bounds, quality_threshold):
+    """CLI wrapper for filter_fastq function"""
+    filter_fastq(
+        input_fastq=input_fastq,
+        output_fastq=output_fastq,
+        gc_bounds=gc_bounds,
+        length_bounds=length_bounds,
+        quality_threshold=quality_threshold
+    )
+
+
+if __name__ == "__main__":
+    cli()
