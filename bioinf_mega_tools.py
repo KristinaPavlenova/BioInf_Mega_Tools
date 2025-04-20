@@ -111,8 +111,7 @@ def filter_fastq(
     for filter in the scale phred33,
     default = 0
     """
-    if not os.path.exists("./filtered/"):
-        os.mkdir("./filtered/")
+os.makedirs("./filtered/", exist_ok=True)
     if not isinstance(gc_bounds, tuple):
         gc_bounds = (0, gc_bounds)
     if not isinstance(length_bounds, tuple):
