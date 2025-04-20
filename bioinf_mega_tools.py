@@ -35,7 +35,7 @@ class NucleicAcidSequence(BiologicalSequence):
         return self.__class__(self.sequence[::-1])
 
     def reverse_complement(self):
-        return self.__class__(self.complement().reverse().sequence)
+        return self.complement().reverse()
 
 
 class DNASequence(NucleicAcidSequence):
