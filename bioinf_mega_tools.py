@@ -124,7 +124,7 @@ def filter_fastq(
             for record in SeqIO.parse(input_handle, "fastq"):
                 qualities = record.letter_annotations["phred_quality"]
                 if (
-                    gc_bounds[0] <= GC(record.seq) <= gc_bounds[1]
+                    gc_bounds[0] <= gc_fraction(record.seq) * 100 <= gc_bounds[1]
                     and length_bounds[0] <= len(record.seq) <= length_bounds[1]
                     and sum(qualities) / len(qualities) >= quality_threshold
                 ):
