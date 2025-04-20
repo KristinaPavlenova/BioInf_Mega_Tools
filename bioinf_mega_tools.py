@@ -20,9 +20,8 @@ class BiologicalSequence(ABC):
     def __repr__(self):
         return f"{self.__class__.__name__}: {self.sequence}"
 
-    @staticmethod
-    def check_alphabet(sequence, alphabet):
-        return set(sequence).issubset(alphabet)
+    def check_alphabet(slf):
+        return set(self.sequence).issubset(self.alphabet)
 
 
 class NucleicAcidSequence(BiologicalSequence):
